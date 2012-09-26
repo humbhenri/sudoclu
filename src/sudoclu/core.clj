@@ -2,8 +2,7 @@
   (:import [javax.swing JFrame JPanel JLabel JButton SwingUtilities]
            [java.awt GridLayout]))
 
-(def board (ref (make-array Integer/TYPE 9 9)))
-
+(def board (atom (vec (take 81 (cycle [0])))))
 
 (defn read-sudoku
   "Read a string representing a sudoku board and populates the board.
@@ -21,40 +20,42 @@ Exemple of input
   (let [a-char (to-array (filter #(not= \newline %) (.toCharArray input )))
         char-to-int (fn [c] (let [i (- (int c) 48)]
                              (if (> i 0) i 0)))]
-    (loop [idx 0
-           x 0
-           y 0]
-      (when (< idx 81)
-        (aset-int @board x y (char-to-int (aget a-char idx)))
-        (recur
-         (inc idx)
-         (if (>= y 8) (inc x) x)
-         (mod (inc y) 9))))))
+    (dotimes [i 81]
+      (swap! board assoc i (char-to-int (aget a-char i))))))
 
+
+;;; GUI
 
 (defn make-square []
   (doto (JButton. )))
 
-
-(defn make-board []
-  (let [panel (JPanel.)]
+(def board-panel
+  (let [panel (JPanel.)
+        squares (make-array JButton 81)]
     (.setLayout panel (GridLayout. 9 9))
-    (dotimes [i 81] (.add panel (make-square)))
-    panel))
+    (dotimes [i 81]
+      (let [square (make-square)]
+        (.add panel square)
+        (aset squares i square)))
+    (hash-map :jpanel panel :squares squares)))
 
-
-(defn update-board [board]
+(defn update-board-panel []
   (SwingUtilities/invokeLater
    (fn []
      (dotimes [i 81]
-       (doto (.getComponent board i)
-         (.setLabel (aget @board (int (Math/floor (/ i 9))) (mod i 9))))))))
+       (let [square (aget (:squares board-panel) i)]
+         (.setLabel square (str (nth @board i)))
+         (.invalidate square)))
+     (.repaint (:jpanel board-panel)))))
 
 
-(defn main-window []
+(defn -main []
+  (add-watch board "update"
+             (fn [k r o n]
+               (update-board-panel)))
   (doto (JFrame. "sudoclu")
                                         ;   (.setDefaultCloseOperation JFrame/EXIT_ON_CLOSE)
-    (.setSize 800 600)
-    (.add (make-board))
-    (.pack)
-    (.setVisible true)))
+    (.setSize 1000 1000)
+    (.add (:jpanel board-panel))
+    (.setVisible true))
+  (read-sudoku (slurp "input.txt")))
