@@ -1,6 +1,6 @@
 (ns sudoclu.core
   (:import [javax.swing JFrame JPanel JLabel JButton SwingUtilities]
-           [java.awt GridLayout]))
+           [java.awt GridLayout Font]))
 
 (def board (atom (vec (take 81 (cycle [0])))))
 
@@ -27,7 +27,8 @@ Exemple of input
 ;;; GUI
 
 (defn make-square []
-  (doto (JButton. )))
+  (doto (JButton. )
+    (.setFont (Font. "Dialog" Font/PLAIN 24))))
 
 (def board-panel
   (let [panel (JPanel.)
@@ -44,8 +45,7 @@ Exemple of input
    (fn []
      (dotimes [i 81]
        (let [square (aget (:squares board-panel) i)]
-         (.setLabel square (str (nth @board i)))
-         (.invalidate square)))
+         (.setLabel square (str (nth @board i)))))
      (.repaint (:jpanel board-panel)))))
 
 
@@ -55,7 +55,7 @@ Exemple of input
                (update-board-panel)))
   (doto (JFrame. "sudoclu")
                                         ;   (.setDefaultCloseOperation JFrame/EXIT_ON_CLOSE)
-    (.setSize 1000 1000)
+    (.setSize 600 600)
     (.add (:jpanel board-panel))
     (.setVisible true))
   (read-sudoku (slurp "input.txt")))
