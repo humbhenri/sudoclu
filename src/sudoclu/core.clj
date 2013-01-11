@@ -16,7 +16,7 @@
 
 
 (defn next-empty [board]
-  (first (for [x (range 10) y (range 10) :when (zero? (get-in board x y))]
+  (first (for [x (range 10) y (range 10) :when (= 0 (get-in board [x y]))]
            [x y])))
 
 
