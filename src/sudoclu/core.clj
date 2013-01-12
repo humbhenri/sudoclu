@@ -1,7 +1,6 @@
 (ns sudoclu.core
   (:use [clojure.pprint :only [pprint]]))
 
-
 (defn from-str [board-repr]
   (->>
    (filter #(Character/isDigit %) board-repr)
@@ -18,16 +17,17 @@
            [x y])))
 
 (defn can-put? [board [row col] i]
-  (and (nil? (some #{i} (get board row)))                             ; test in row
-       (nil? (some #{i} (for [x (range 9)] (get-in board [x col])))) ; test in column
-       (nil? (some #{i} (for [x (take 3 (iterate inc (- row (mod row 3))))
+  (and (nil? (some #{i} (get board row)))                                 ; test in row
+       (nil? (some #{i} (for [x (range 9)] (get-in board [x col]))))      ; test in column
+       (nil? (some #{i} (for [x (take 3 (iterate inc (- row (mod row 3)))); test in square
                               y (take 3 (iterate inc (- col (mod col 3))))]
                           (get-in board [x y]))))))
 
 (defn solve [board]
   (if-let [[x y] (next-empty board)]
-    (first (filter (comp nil? next-empty)
-                   (for [i (range 1 10)
-                         :when (can-put? board [x y] i)
-                         :let [board* (-> (assoc-in board [x y] i) (solve))]] board*)))
+    (or (first (filter (comp nil? next-empty)
+                       (for [i (range 1 10)
+                             :when (can-put? board [x y] i)
+                             :let [board* (-> (assoc-in board [x y] i) (solve))]] board*)))
+        board) ; impossible from here, backtrack
     board))
