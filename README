@@ -1,10 +1,10 @@
 # sudoclu
 
-FIXME: write description
+Recursive sudoku solver in clojure.
 
 ## Usage
 
-FIXME: write
+See tests.
 
 ## License
 
