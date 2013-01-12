@@ -31,3 +31,20 @@
                              :let [board* (-> (assoc-in board [x y] i) (solve))]] board*)))
         board) ; impossible from here, backtrack
     board))
+
+(defn solve-batch [sudokus]
+  (doseq [sudoku sudokus]
+    (when (> (.length sudoku) 0)
+      (-> (from-str sudoku)
+          (solve)
+          (to-str)
+          (println)))))
+
+
+(defn -main [& args]
+  (let [into-vec (partial into [])]
+    (when-let [[input] args]
+      (-> (slurp input)
+          (.split "-- SAMPLE.* --")
+          (into-vec)
+          (solve-batch)))))
