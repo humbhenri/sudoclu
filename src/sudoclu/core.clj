@@ -1,5 +1,7 @@
 (ns sudoclu.core
-  (:use [clojure.pprint :only [pprint]]))
+  (:gen-class)
+  (:use [clojure.pprint :only [pprint]]
+        [clojure.string :only [join]]))
 
 (defn from-str [board-repr]
   (->>
@@ -33,17 +35,17 @@
     board))
 
 (defn solve-batch [sudokus]
-  (doseq [sudoku sudokus]
-    (when (> (.length sudoku) 0)
-      (-> (from-str sudoku)
-          (solve)
-          (time)
-          (to-str)
-          (println)))))
+  (join "\n\n" (for [sudoku sudokus]
+                 (when (> (.length sudoku) 0)
+                   (-> (from-str sudoku)
+                       (solve)
+                       (to-str))))))
 
 
 (defn -main [& args]
   (when-let [[input] args]
-    (-> (slurp input)
-        (.split "-- SAMPLE.* --")
-        (solve-batch))))
+    (spit (str "solved_" input)
+          (-> (slurp input)
+              (.split "\n")
+              (solve-batch)
+              (time)))))
