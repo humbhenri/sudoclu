@@ -1,7 +1,8 @@
 (ns sudoclu.core
   (:gen-class)
-  (:use [clojure.pprint :only [pprint]]
-        [clojure.string :only [join]]))
+  (:use [clojure.string :only [join]]
+        [clojure.pprint :only [pprint]])
+  (:import [java.io File]))
 
 (defn from-str [board-repr]
   (->>
@@ -12,7 +13,8 @@
    (into [])))
 
 (defn to-str [board]
-  (.replaceAll (with-out-str (pprint board)) "[\\[\\]]" ""))
+  (join "\n" (for [row board]
+               (join " " row))))
 
 (defn next-empty [board]
   (first (for [x (range 9) y (range 9) :when (= 0 (get-in board [x y]))]
@@ -34,6 +36,8 @@
         board) ; impossible from here, backtrack
     board))
 
+
+
 (defn solve-batch [sudokus]
   (join "\n\n" (for [sudoku sudokus]
                  (when (> (.length sudoku) 0)
@@ -44,7 +48,7 @@
 
 (defn -main [& args]
   (when-let [[input] args]
-    (spit (str "solved_" input)
+    (spit (str "solved_" (.getName (File. input)))
           (-> (slurp input)
               (.split "\n")
               (solve-batch)
